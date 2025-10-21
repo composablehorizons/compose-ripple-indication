@@ -54,7 +54,7 @@ fun App() {
 and you are set. Your app contents will now use the ripple indication.
 
 By default, the effect will use Material 3's default alpha values and a boring gray color. Continue reading to learn how
-to spicy it up:
+to spice it up:
 
 ## Customization Options
 
