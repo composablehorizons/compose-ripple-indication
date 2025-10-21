@@ -16,7 +16,7 @@ dependencies {
 
 ## Quick Start
 
-Wrap the contents of your app with a Local
+Wrap the contents of your app with a CompositionLocal:
 
 ```kotlin
 import androidx.compose.foundation.LocalIndication
