@@ -17,7 +17,7 @@ val libraryName = "Compose Ripple Indication"
 val libraryDescription = "Use the Material Ripple effect in any Compose UI design system and app."
 
 val publishGroupId = "com.composables"
-val publishVersion = "1.0.0"
+val publishVersion = "1.1.0"
 val githubUrl = "github.com/composablehorizons/compose-ripple-indication"
 
 java {
