@@ -1,0 +1,25 @@
+[versions]
+unstyled = "1.46.1"
+
+# compose
+compose = "1.9.1"
+composeHotReload = "1.0.0-rc02"
+
+#kotlin
+kotlin = "2.2.20"
+
+# android specific
+agp = "8.11.2"
+android-compileSdk = "36"
+android-minSdk = "24"
+
+[libraries]
+composables-composeunstyled = { module = "com.composables:core", version.ref = "unstyled" }
+jetbrains-compose-material-ripple = { module = "org.jetbrains.compose.material:material-ripple", version.ref = "compose" }
+
+[plugins]
+android-library = { id = "com.android.library", version.ref = "agp" }
+jetbrains-compose-hotreload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
+jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "compose" }
+jetbrains-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+jetbrains-kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
