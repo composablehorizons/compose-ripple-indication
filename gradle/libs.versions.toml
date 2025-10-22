@@ -11,7 +11,7 @@ kotlin = "2.2.20"
 # android specific
 agp = "8.11.2"
 android-compileSdk = "36"
-android-minSdk = "24"
+android-minSdk = "21"
 
 [libraries]
 composables-composeunstyled = { module = "com.composables:core", version.ref = "unstyled" }
