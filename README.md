@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.composables:ripple-indication:1.0.0")
+    implementation("com.composables:ripple-indication:1.1.0")
 }
 ```
 
