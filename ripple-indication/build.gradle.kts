@@ -1,7 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 
-import org.jetbrains.compose.internal.utils.getLocalProperty
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -9,16 +8,8 @@ plugins {
     alias(libs.plugins.jetbrains.compose.compiler)
     alias(libs.plugins.jetbrains.kotlin.multiplatform)
     alias(libs.plugins.android.library)
-    id("maven-publish")
-    id("signing")
+    id("com.composables.kpm")
 }
-
-val libraryName = "Compose Ripple Indication"
-val libraryDescription = "Use the Material Ripple effect in any Compose UI design system and app."
-
-val publishGroupId = "com.composables"
-val publishVersion = "1.2.0"
-val githubUrl = "github.com/composablehorizons/compose-ripple-indication"
 
 java {
     toolchain {
@@ -72,70 +63,10 @@ kotlin {
     }
 }
 
-group = publishGroupId
-version = publishVersion
-
-val javadocJar = tasks.create<Jar>("javadocJar") {
-    archiveClassifier.set("javadoc")
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            withType<MavenPublication> {
-                artifact(javadocJar)
-                pom {
-                    name.set(libraryName)
-                    description.set(libraryDescription)
-                    url.set("https://${githubUrl}")
-                    licenses {
-                        license {
-                            name.set("MIT License")
-                            url.set("https://${githubUrl}/blob/main/LICENSE")
-                        }
-                    }
-                    issueManagement {
-                        system.set("GitHub Issues")
-                        url.set("https://${githubUrl}/issues")
-                    }
-                    developers {
-                        developer {
-                            id.set("composablehorizons")
-                            name.set("Composable Horizons")
-                            email.set("support@composables.com")
-                        }
-                    }
-
-                    scm {
-                        connection.set("scm:git:${githubUrl}.git")
-                        developerConnection.set("scm:git:ssh://${githubUrl}.git")
-                        url.set("https://${githubUrl}/tree/main")
-                    }
-                }
-            }
-        }
-        // TODO: remove after https://youtrack.jetbrains.com/issue/KT-46466 is fixed
-        project.tasks.withType(AbstractPublishToMaven::class.java).configureEach {
-            dependsOn(project.tasks.withType(Sign::class.java))
-        }
-    }
-}
-
 android {
     namespace = "com.composables.compose.ripple"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
-}
-
-
-signing {
-    useInMemoryPgpKeys(
-        getLocalProperty("signing.keyId") ?: System.getenv("SIGNING_KEY_ID"),
-        getLocalProperty("signing.key") ?: System.getenv("SIGNING_KEY"),
-        getLocalProperty("signing.password") ?: System.getenv("SIGNING_PASSWORD"),
-    )
-    sign(publishing.publications)
 }

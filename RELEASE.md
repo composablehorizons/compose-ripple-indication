@@ -1,39 +1,63 @@
 # Releasing to Maven Central
 
-## Pre-requirements
-
-Add your sonatype credentials to your `local.properties` file (create the file if missing) in this format:
-
-```properties
-sonatype.username=
-sonatype.password=
-sonatype.stagingProfileId=
-signing.key=
-signing.password=
-signing.keyId=
-```
-
-## Release to Maven Central
-
-The following command uploads all kotlin multiplatform artifacts to Sonatype Nexus and then closes the release.
-
-The commands that follows need to be run together. Otherwise you will get an
-error: `No staging repository with name sonatype created`
+Publishing uses [KPM](https://github.com/composablehorizons/kpm) 0.1.0. Install the CLI:
 
 ```shell
-./gradlew publishAllPublicationsToSonatypeRepository closeAndReleaseSonatypeStagingRepository
+bun install --global @composablehorizons/kpm@0.1.0
 ```
 
-As soon as the version is available it will be listed at: https://repo1.maven.org/maven2/com/composables/core/
+Run the following commands from the repository root, which contains the Gradle wrapper
+and `package.yml`. The library module's `package.yml` is a symlink to the root file,
+so the CLI and Gradle plugin share one version and set of Maven metadata. Preserve
+that symlink when checking out the repository.
 
-## Release to Maven Local
+## Credentials
 
-The following command uploads all kotlin multiplatform artifacts to Maven Local so that you can use the dependency
-locally in other projects stored in your computer:
+Set the standard Gradle publishing properties through environment variables or your
+user-level `~/.gradle/gradle.properties` file:
+
+- `mavenCentralUsername`: Central Portal user-token username.
+- `mavenCentralPassword`: Central Portal user-token password.
+- `signingInMemoryKey`: ASCII-armored private signing key.
+- `signingInMemoryKeyId`: Signing key ID, if required by your key.
+- `signingInMemoryKeyPassword`: Signing key password, if required by your key.
+
+For environment variables, prefix each property with `ORG_GRADLE_PROJECT_`, for
+example `ORG_GRADLE_PROJECT_mavenCentralUsername`. Keep credentials out of Git.
+The previous `sonatype.*` and `signing.*` entries in `local.properties` are no
+longer used for publishing.
+
+## Verify and publish
+
+Start from a clean working tree. Use macOS with an Android SDK and Xcode installed
+to build all configured targets, including iOS.
 
 ```shell
-./gradlew publishToMavenLocal
+./gradlew :ripple-indication:allTests
+kpm version patch
+kpm publish --dry-run
+kpm publish
 ```
 
-When the task completes successfully, you can add the published artifact in your project. Make sure the other projects
-use `mavenLocal()` in their `settings.gradle.kts` dependencies block.
+`kpm version patch` updates `package.yml`, commits the version, and creates an
+annotated `v<version>` tag. Use an exact version instead of `patch` when needed.
+`kpm publish --dry-run` inspects the task graph without building or uploading.
+`kpm publish` builds, signs, uploads, and automatically releases the artifacts on
+Maven Central. It does not run tests or push Git commits and tags.
+
+After a successful release, push the release commit and tag:
+
+```shell
+git push --follow-tags
+```
+
+Published artifacts appear under
+[com.composables:ripple-indication](https://repo1.maven.org/maven2/com/composables/ripple-indication/).
+
+## Publish to Maven Local
+
+```shell
+./gradlew :ripple-indication:publishToMavenLocal
+```
+
+Add `mavenLocal()` to the consuming project's repositories to use the local artifacts.
