@@ -1,0 +1,20 @@
+name: Compose Ripple Indication
+description: Use the Material Ripple effect in any Compose UI design system and app.
+groupId: com.composables
+artifactId: ripple-indication
+version: 1.2.0
+url: https://github.com/composablehorizons/compose-ripple-indication
+licenses:
+  - name: MIT License
+    url: https://github.com/composablehorizons/compose-ripple-indication/blob/main/LICENSE
+developers:
+  - id: composablehorizons
+    name: Composable Horizons
+    email: support@composables.com
+scm:
+  connection: scm:git:https://github.com/composablehorizons/compose-ripple-indication.git
+  developerConnection: scm:git:ssh://git@github.com/composablehorizons/compose-ripple-indication.git
+  url: https://github.com/composablehorizons/compose-ripple-indication
+issueManagement:
+  system: GitHub Issues
+  url: https://github.com/composablehorizons/compose-ripple-indication/issues
