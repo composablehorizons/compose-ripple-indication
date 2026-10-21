@@ -1,4 +1,4 @@
-rootProject.name = "RippleIndication"
+rootProject.name = "ComposeRippleIndication"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
