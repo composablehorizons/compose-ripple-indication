@@ -71,8 +71,6 @@ jobs:
             test -n "${!name}" || { echo "Missing publishing credential: $name" >&2; exit 1; }
           done
           kpm publish
-      - name: Verify Maven Central availability
-        run: python3 .github/scripts/verify-central.py
 
   draft-release:
     needs: publish

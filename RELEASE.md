@@ -2,8 +2,7 @@
 
 Releases follow the same KPM and GitHub Actions flow as Compose System UI and
 Compose Google Fonts. Pushing a version tag publishes signed artifacts to Maven
-Central, verifies that every platform publication is downloadable, and creates a
-**draft** GitHub release from `CHANGELOG.md`. Review and publish that draft separately.
+Central, then creates a **draft** GitHub release from `CHANGELOG.md`. Review and publish that draft separately.
 
 ## Prepare a release
 
@@ -45,8 +44,8 @@ that symlink when checking out the repository.
 
    Replace `v1.2.1` with the prepared release tag. The `Release` workflow validates
    the tag, package version, and changelog; runs JVM tests and builds every platform
-   publication; then publishes with `kpm publish`. After Maven Central availability
-   is confirmed, it creates a draft GitHub release with that version's changelog notes.
+   publication; then publishes with `kpm publish`. Once publishing succeeds, it
+   creates a draft GitHub release with that version's changelog notes.
 
 The workflow also supports **Actions → Release → Run workflow** with an existing
 release tag. Dispatching does not bump the version or create a tag. Check the failed
