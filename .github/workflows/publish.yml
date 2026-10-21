@@ -1,0 +1,105 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to publish
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  RELEASE_REF: ${{ inputs.tag || github.ref_name }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish:
+    runs-on: macos-latest
+    environment: maven-central
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.RELEASE_REF }}
+          fetch-depth: 0
+      - uses: gradle/actions/wrapper-validation@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: gradle/actions/setup-gradle@v5
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platforms;android-36 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: 'false'
+      - name: Install KPM
+        run: npm install --global @composablehorizons/kpm@0.1.0
+      - name: Validate release metadata
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          git show-ref --verify "refs/tags/$RELEASE_REF"
+          test "$(git rev-parse HEAD)" = "$(git rev-list -n 1 "$RELEASE_REF")"
+          test "$RELEASE_REF" = "v$(kpm version)"
+          grep -Fq "## [$(kpm version)] - " CHANGELOG.md
+      - name: Verify tests and all platform publications
+        run: ./gradlew :ripple-indication:jvmTest :ripple-indication:publishToMavenLocal --no-configuration-cache --console=plain
+      - name: Publish with KPM
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+          for name in ORG_GRADLE_PROJECT_mavenCentralUsername ORG_GRADLE_PROJECT_mavenCentralPassword ORG_GRADLE_PROJECT_signingInMemoryKey; do
+            test -n "${!name}" || { echo "Missing publishing credential: $name" >&2; exit 1; }
+          done
+          kpm publish
+      - name: Verify Maven Central availability
+        run: python3 .github/scripts/verify-central.py
+
+  draft-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.RELEASE_REF }}
+      - name: Extract release notes
+        run: |
+          version="${RELEASE_REF#v}"
+          awk -v heading="## [$version] - " '
+            index($0, heading) == 1 { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+            END { if (!found) exit 1 }
+          ' CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
+          grep -q '[^[:space:]]' "$RUNNER_TEMP/release-notes.md"
+      - name: Create draft GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view "$RELEASE_REF" >/dev/null 2>&1; then
+            echo "Release already exists for $RELEASE_REF."
+          else
+            gh release create "$RELEASE_REF" --verify-tag --draft --title "$RELEASE_REF" --notes-file "$RUNNER_TEMP/release-notes.md"
+          fi
