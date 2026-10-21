@@ -22,7 +22,8 @@ fun rememberRippleIndication(
 ): IndicationNodeFactory {
     val colorState = rememberUpdatedState(color)
     val rippleAlphaState = rememberUpdatedState(rippleAlpha)
-    return remember(color, bounded, radius, rippleAlpha) {
+    // Dp.Unspecified contains NaN, which is not equal to itself as a primitive remember key.
+    return remember(bounded, radius.value.toBits()) {
         MaterialRippleNodeFactory(
             bounded = bounded,
             radius = radius,

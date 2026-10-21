@@ -59,6 +59,10 @@ kotlin {
     }
 
     sourceSets {
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
+
         val commonMain by getting {
             dependencies {
                 implementation(compose.foundation)
